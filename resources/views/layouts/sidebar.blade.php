@@ -5,47 +5,65 @@
     </div>
 
     <nav class="space-y-2">
+        @foreach (config('menu') as $menu)
+            {{-- Menu biasa --}}
+            @if (isset($menu['route']))
+                @can($menu['permission'])
+                    <a href="{{ route($menu['route']) }}"
+                    class="block px-4 py-3 rounded-lg
+                    {{ request()->routeIs($menu['route']) ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                        {{ $menu['label'] }}
+                    </a>
+                @endcan
+            {{-- Menu dengan submenu --}}
+            @elseif (isset($menu['children']))
+                @php
+                    $visibleChildren = collect($menu['children'])
+                        ->filter(fn ($child) => auth()->user()->can($child['permission']));
+                    $isActive = $visibleChildren->contains(
+                        fn ($child) => request()->routeIs($child['route'])
+                    );
+                @endphp
+                @if ($visibleChildren->isNotEmpty())
+                    <div class="mt-4"
+                        x-data="{ open: {{ $isActive ? 'true' : 'false' }} }">
+                        <button type="button"
+                                @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white">
 
-        {{-- Dashboard --}}
-        @can('dashboard.view')
-            <a href="{{ route('home') }}"
-               class="block px-4 py-3 rounded-lg hover:bg-gray-700">
-                Dashboard
-            </a>
-        @endcan
+                            {{ $menu['label'] }}
 
-        {{-- Users --}}
-        @can('users.view')
-            <a href="{{ url('/users') }}"
-               class="block px-4 py-3 rounded-lg hover:bg-gray-700">
-                Users
-            </a>
-        @endcan
+                            <svg class="w-4 h-4 transition-transform"
+                                :class="{ 'rotate-180': open }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
 
-        {{-- Roles --}}
-        @can('roles.view')
-            <a href="{{ route('roles.index') }}"
-               class="block px-4 py-3 rounded-lg hover:bg-gray-700">
-                Roles
-            </a>
-        @endcan
+                                <path stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-        {{-- Permissions --}}
-        @can('permissions.view')
-            <a href="{{ route('permissions.index') }}"
-            class="block px-4 py-3 rounded-lg hover:bg-gray-700">
-                Permissions
-            </a>
-        @endcan
+                        <div x-show="open"
+                            x-transition
+                            class="mt-1">
+                            @foreach ($visibleChildren as $child)
 
-        {{-- Branches --}}
-        @can('branches.view')
-            <a href="{{ route('branches.index') }}"
-            class="block px-4 py-3 rounded-lg hover:bg-gray-700">
-                Branches
-            </a>
-        @endcan
+                                <a href="{{ route($child['route']) }}"
+                                class="block px-4 py-3 ml-2 rounded-lg
+                                {{ request()->routeIs($child['route']) ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
 
+                                    {{ $child['label'] }}
+
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endif
+        @endforeach
     </nav>
 
     <div class="border-t border-gray-700 mt-8 pt-4">

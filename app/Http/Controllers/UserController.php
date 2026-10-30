@@ -118,6 +118,13 @@ class UserController extends Controller
                 'distinct',
                 'exists:roles,name,guard_name,web',
             ],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => [
+                'required',
+                'string',
+                'distinct',
+                'exists:permissions,name,guard_name,web',
+            ],
             'password' => ['nullable', 'confirmed', Password::min(8)],
         ]);
 
@@ -132,6 +139,8 @@ class UserController extends Controller
 
         //$user->syncRoles([$validated['role']]);
         $user->syncRoles($validated['roles']);
+
+        $user->syncPermissions($validated['permissions'] ?? []);
 
         return redirect()
             ->route('users.index')
