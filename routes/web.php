@@ -5,6 +5,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MenuController;
 
 Route::get('/', function () {
     return redirect()->route('home');
@@ -100,5 +101,41 @@ Route::middleware('auth')->group(function () {
     Route::patch('/branches/{branch}/toggle-status', [BranchController::class, 'toggleStatus'])
         ->middleware('permission:branches.edit')
         ->name('branches.toggle-status');
+
+    Route::get('/menus', [MenuController::class, 'index'])
+        ->middleware('permission:menus.view')
+        ->name('menus.index');
+
+    Route::get('/menus/create', [MenuController::class, 'create'])
+        ->middleware('permission:menus.create')
+        ->name('menus.create');
+
+    Route::post('/menus', [MenuController::class, 'store'])
+        ->middleware('permission:menus.create')
+        ->name('menus.store');
+
+    Route::get('/menus/{menu}/edit', [MenuController::class, 'edit'])
+        ->middleware('permission:menus.edit')
+        ->name('menus.edit');
+
+    Route::put('/menus/{menu}', [MenuController::class, 'update'])
+        ->middleware('permission:menus.edit')
+        ->name('menus.update');
+
+    Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])
+        ->middleware('permission:menus.delete')
+        ->name('menus.destroy');
+
+    Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])
+        ->middleware('permission:permissions.manage')
+        ->name('permissions.destroy');
+
+    Route::get('/permissions/{permission}/edit', [PermissionController::class, 'edit'])
+        ->middleware('permission:permissions.manage')
+        ->name('permissions.edit');
+
+    Route::put('/permissions/{permission}', [PermissionController::class, 'update'])
+        ->middleware('permission:permissions.manage')
+        ->name('permissions.update');
 
 });

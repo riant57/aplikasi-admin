@@ -34,8 +34,14 @@
 
                 {{-- Pesan sukses --}}
                 @if (session('success'))
-                    <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-6">
+                    <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
                         {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        {{ session('error') }}
                     </div>
                 @endif
 
@@ -130,6 +136,7 @@
                                     <th class="px-6 py-4">Aksi</th>
                                     <th class="px-6 py-4">Nama Permission</th>
                                     <th class="px-6 py-4">Guard</th>
+                                    <th class="px-6 py-4">Aksi</th>
                                 </tr>
                             </thead>
 
@@ -163,6 +170,35 @@
 
                                         <td class="px-6 py-4 text-gray-600">
                                             {{ $permission->guard_name }}
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">
+
+                                            @can('permissions.manage')
+                                                <a
+                                                    href="{{ route('permissions.edit', $permission) }}"
+                                                    class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                                                >
+                                                    Edit
+                                                </a>
+                                            @endcan
+
+                                            @can('permissions.manage')
+                                                <form
+                                                    action="{{ route('permissions.destroy', $permission) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Yakin ingin menghapus permission ini?')"
+                                                >
+                                                    @csrf
+                                                    @method('DELETE')
+
+                                                    <button
+                                                        type="submit"
+                                                        class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            @endcan
                                         </td>
 
                                     </tr>

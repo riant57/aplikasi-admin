@@ -5,65 +5,100 @@
     </div>
 
     <nav class="space-y-2">
-        @foreach (config('menu') as $menu)
-            {{-- Menu biasa --}}
-            @if (isset($menu['route']))
-                @can($menu['permission'])
-                    <a href="{{ route($menu['route']) }}"
-                    class="block px-4 py-3 rounded-lg
-                    {{ request()->routeIs($menu['route']) ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                        {{ $menu['label'] }}
-                    </a>
-                @endcan
-            {{-- Menu dengan submenu --}}
-            @elseif (isset($menu['children']))
-                @php
-                    $visibleChildren = collect($menu['children'])
-                        ->filter(fn ($child) => auth()->user()->can($child['permission']));
-                    $isActive = $visibleChildren->contains(
-                        fn ($child) => request()->routeIs($child['route'])
-                    );
-                @endphp
-                @if ($visibleChildren->isNotEmpty())
-                    <div class="mt-4"
-                        x-data="{ open: {{ $isActive ? 'true' : 'false' }} }">
-                        <button type="button"
-                                @click="open = !open"
-                                class="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white">
 
-                            {{ $menu['label'] }}
+        @foreach ($menus as $menu)
 
-                            <svg class="w-4 h-4 transition-transform"
-                                :class="{ 'rotate-180': open }"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
+            @php
+                $canViewMenu = empty($menu->permission_name)
+                    || auth()->user()->can($menu->permission_name);
 
-                                <path stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                $visibleChildren = $menu->children->filter(function ($child) {
+                    return empty($child->permission_name)
+                        || auth()->user()->can($child->permission_name);
+                });
 
-                        <div x-show="open"
-                            x-transition
-                            class="mt-1">
-                            @foreach ($visibleChildren as $child)
+                $hasChildren = $canViewMenu && $visibleChildren->isNotEmpty();
+            @endphp
 
-                                <a href="{{ route($child['route']) }}"
-                                class="block px-4 py-3 ml-2 rounded-lg
-                                {{ request()->routeIs($child['route']) ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+            {{-- MENU UTAMA DENGAN SUBMENU --}}
+            @if ($hasChildren)
 
-                                    {{ $child['label'] }}
+                <div
+                    x-data="{ open: {{ $visibleChildren->contains(fn ($child) => request()->routeIs($child->route)) ? 'true' : 'false' }} }"
+                >
 
-                                </a>
-                            @endforeach
-                        </div>
+                    <button
+                        type="button"
+                        @click="open = !open"
+                        class="w-full flex items-center justify-between px-4 py-2 rounded hover:bg-gray-700"
+                    >
+                        <span class="flex items-center gap-3">
+
+                            @if ($menu->icon)
+                                <i data-lucide="{{ $menu->icon }}" class="w-5 h-5"></i>
+                            @endif
+
+                            <span>{{ $menu->name }}</span>
+
+                        </span>
+
+                        <span
+                            :class="open ? 'rotate-180' : ''"
+                            class="transition-transform"
+                        >
+                            ▼
+                        </span>
+                    </button>
+
+                    <div
+                        x-show="open"
+                        x-transition
+                        class="ml-4 mt-2 space-y-1"
+                    >
+
+                        @foreach ($visibleChildren as $child)
+
+                            <a
+                                href="{{ route($child->route) }}"
+                                class="flex items-center gap-3 px-4 py-2 rounded
+                                    {{ request()->routeIs($child->route)
+                                        ? 'bg-blue-600 text-white'
+                                        : 'hover:bg-gray-700' }}"
+                            >
+                                @if ($child->icon)
+                                    <i data-lucide="{{ $child->icon }}" class="w-4 h-4"></i>
+                                @endif
+
+                                <span>{{ $child->name }}</span>
+                            </a>
+
+                        @endforeach
+
                     </div>
-                @endif
+
+                </div>
+
+            {{-- MENU UTAMA TANPA SUBMENU --}}
+            @elseif ($canViewMenu && $menu->route)
+
+                <a
+                    href="{{ route($menu->route) }}"
+                    class="flex items-center gap-3 px-4 py-2 rounded
+                        {{ request()->routeIs($menu->route)
+                            ? 'bg-blue-600 text-white'
+                            : 'hover:bg-gray-700' }}"
+                >
+                    @if ($menu->icon)
+                        <i data-lucide="{{ $menu->icon }}" class="w-5 h-5"></i>
+                    @endif
+
+                    <span>{{ $menu->name }}</span>
+                </a>
+
             @endif
+
         @endforeach
+
     </nav>
 
     <div class="border-t border-gray-700 mt-8 pt-4">
