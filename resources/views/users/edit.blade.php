@@ -63,96 +63,98 @@
                         </div>
 
                         {{-- Role --}}
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">
-                                Role Pengguna
-                            </label>
+                        @can('users.roles.manage')
 
-                            <div class="space-y-3 rounded-lg border border-gray-200 p-4">
-                                @foreach ($roles as $role)
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            name="roles[]"
-                                            value="{{ $role->name }}"
-                                            @checked(
-                                                in_array(
-                                                    $role->name,
-                                                    old('roles', $user->roles->pluck('name')->all())
-                                                )
-                                            )
-                                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        >
-
-                                        <span class="text-sm text-gray-700">
-                                            {{ $role->name }}
-                                        </span>
-                                    </label>
-                                @endforeach
-                            </div>
-
-                            @error('roles')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-
-                            @error('roles.*')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-
-                            <p class="mt-2 text-sm text-gray-500">
-                                Pilih minimal satu role. Kamu dapat memilih lebih dari satu.
-                            </p>
-                        </div>
-
-                        {{-- Permission Tambahan --}}
-
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">
-                                Permission Tambahan
-                            </label>
-
-                        <p class="text-sm text-gray-500 mb-3">
-                            Pilih hak akses tambahan yang diberikan langsung kepada pengguna ini,
-                            di luar hak akses yang diperoleh dari role.
-                        </p>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg border border-gray-200 p-4">
-                            @forelse ($permissions as $permission)
-                                <label class="flex items-start gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="permissions[]"
-                                        value="{{ $permission->name }}"
-                                        @checked(
-                                            in_array(
-                                                $permission->name,
-                                                old('permissions', $userPermissions)
-                                            )
-                                        )
-                                        class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    >
-
-                                    <span class="text-sm text-gray-700">
-                                        {{ $permission->name }}
-                                    </span>
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    Role Pengguna
                                 </label>
-                            @empty
-                                <p class="text-sm text-gray-500">
-                                    Belum ada permission yang tersedia.
+
+                                <div class="space-y-3 rounded-lg border border-gray-200 p-4">
+                                    @foreach ($roles as $role)
+                                        <label class="flex items-center gap-3 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="roles[]"
+                                                value="{{ $role->name }}"
+                                                @checked(
+                                                    in_array(
+                                                        $role->name,
+                                                        old('roles', $user->roles->pluck('name')->all())
+                                                    )
+                                                )
+                                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            >
+
+                                            <span class="text-sm text-gray-700">
+                                                {{ $role->name }}
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+
+                                @error('roles')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                @error('roles.*')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Pilih minimal satu role. Kamu dapat memilih lebih dari satu.
                                 </p>
-                            @endforelse
-                        </div>
+                            </div>
+                        @endcan
+                        {{-- Permission Tambahan --}}
+                        @can('users.permissions.manage')
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    Permission Tambahan
+                                </label>
 
-                        @error('permissions')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                                <p class="text-sm text-gray-500 mb-3">
+                                    Pilih hak akses tambahan yang diberikan langsung kepada pengguna ini,
+                                    di luar hak akses yang diperoleh dari role.
+                                </p>
 
-                        @error('permissions.*')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg border border-gray-200 p-4">
+                                    @forelse ($permissions as $permission)
+                                        <label class="flex items-start gap-3 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="permissions[]"
+                                                value="{{ $permission->name }}"
+                                                @checked(
+                                                    in_array(
+                                                        $permission->name,
+                                                        old('permissions', $userPermissions)
+                                                    )
+                                                )
+                                                class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            >
 
-                        </div>
+                                            <span class="text-sm text-gray-700">
+                                                {{ $permission->name }}
+                                            </span>
+                                        </label>
+                                    @empty
+                                        <p class="text-sm text-gray-500">
+                                            Belum ada permission yang tersedia.
+                                        </p>
+                                    @endforelse
+                                </div>
 
+                                @error('permissions')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                @error('permissions.*')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                            </div>
+                        @endcan    
                         {{-- Password --}}
                         <div class="mb-5">
                             <label for="password" class="block font-medium mb-2">

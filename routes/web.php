@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
         ->name('users.update');
 
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
-        ->middleware('permission.delete')
+        ->middleware('permission:users.delete')
         ->name('users.destroy');
 
     Route::get('/roles', [RoleController::class, 'index'])
@@ -137,5 +137,21 @@ Route::middleware('auth')->group(function () {
     Route::put('/permissions/{permission}', [PermissionController::class, 'update'])
         ->middleware('permission:permissions.manage')
         ->name('permissions.update');
+
+    Route::get('/permission-test', function () {
+        return view('permission-test');
+    })->middleware('auth')->name('permission-test');
+
+    Route::get('/audit-alpha', function () {
+        return 'Akses audit.alpha berhasil!';
+    })->middleware(['auth', 'permission:audit.alpha']);
+
+    Route::get('/audit-beta', function () {
+        return 'Akses audit.beta berhasil!';
+    })->middleware(['auth', 'permission:audit.beta']);
+
+    Route::get('/audit-gamma', function () {
+        return 'Akses audit.gamma berhasil!';
+    })->middleware(['auth', 'permission:audit.gamma']);
 
 });

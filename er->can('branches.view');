@@ -1,0 +1,29 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#8314
+    [34mid[39m: [35m8[39m,
+    [34mname[39m: [32m"[39m[32mUser Audit[39m[32m"[39m,
+    [34memail[39m: [32m"[39m[32maudit@example.com[39m[32m"[39m,
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: [32m"[39m\$[32m2y[39m\$[32m12[39m\$[32mFD3OgkK2DF/rcqHSWpAYsuMXYkwufmZypcYhsBEIvXMUK11kjixje[39m[32m"[39m,
+    [34mtwo_factor_secret[39m: [36mnull[39m,
+    [34mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    [34mtwo_factor_confirmed_at[39m: [36mnull[39m,
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-11-06 22:09:18[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-11-06 22:09:36[39m[32m"[39m,
+    [34mroles[39m: [34;4mIlluminate\Database\Eloquent\Collection[39;24m {#8946
+      [34mall[39m: [
+        [34;4mSpatie\Permission\Models\Role[39;24m {#8945
+          [34mid[39m: [35m4[39m,
+          [34mname[39m: [32m"[39m[32mAudit A[39m[32m"[39m,
+          [34mguard_name[39m: [32m"[39m[32mweb[39m[32m"[39m,
+          [34mcreated_at[39m: [32m"[39m[32m2026-11-06 22:05:30[39m[32m"[39m,
+          [34mupdated_at[39m: [32m"[39m[32m2026-11-06 22:05:30[39m[32m"[39m,
+          [34mpivot[39m: [34;4mIlluminate\Database\Eloquent\Relations\MorphPivot[39;24m {#8952
+            [34mmodel_type[39m: [32m"[39m[32mApp[39m\\[32mModels[39m\\[32mUser[39m[32m"[39m,
+            [34mmodel_id[39m: [35m8[39m,
+            [34mrole_id[39m: [35m4[39m,
+          },
+        },
+      ],
+    },
+  }

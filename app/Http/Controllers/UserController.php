@@ -24,7 +24,7 @@ class UserController extends Controller
                 });
             })
             ->orderBy('name')
-            ->paginate(3)
+            ->paginate(20)
             ->withQueryString();
 
         return view('users.index', compact('users', 'search'));
@@ -32,8 +32,15 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = \Spatie\Permission\Models\Role::orderBy('name')->get();
-        return view('users.create', compact('roles'));
+        $canManageRoles = auth()->user()->can('users.roles.manage');
+
+        $roles = $canManageRoles
+            ? \Spatie\Permission\Models\Role::where('guard_name', 'web')
+                ->orderBy('name')
+                ->get()
+            : collect();
+
+        return view('users.create', compact('roles', 'canManageRoles'));
     }
 
     // public function edit(User $user)
@@ -71,19 +78,25 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $canManageRoles = $request->user()->can('users.roles.manage');
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
-            //'role' => ['required', 'string', 'exists:roles,name,guard_name,web',],
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => [
+        ];
+
+        if ($canManageRoles) {
+            $rules['roles'] = ['required', 'array', 'min:1'];
+            $rules['roles.*'] = [
                 'required',
                 'string',
                 'distinct',
                 'exists:roles,name,guard_name,web',
-            ],
-        ]);
+            ];
+        }
+
+        $validated = $request->validate($rules);
 
         $user = User::create([
             'name' => $validated['name'],
@@ -91,8 +104,9 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        //$user->assignRole($validated['role']);
-        $user->syncRoles($validated['roles']);
+        if ($canManageRoles) {
+            $user->syncRoles($validated['roles']);
+        }
 
         return redirect()
             ->route('users.index')
@@ -101,8 +115,39 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
+        $canManageRoles = $request->user()->can('users.roles.manage');
+        $canManagePermissions = $request->user()->can('users.permissions.manage');
+        
+        // $validated = $request->validate([
+        //     'name' => ['required', 'string', 'max:255'],
+        //     'email' => [
+        //         'required',
+        //         'string',
+        //         'email',
+        //         'max:255',
+        //         'unique:users,email,' . $user->id,
+        //     ],
+        //     //'role' => ['required','string', 'exists:roles,name,guard_name,web',],
+        //     'roles' => ['required', 'array', 'min:1'],
+        //     'roles.*' => [
+        //         'required',
+        //         'string',
+        //         'distinct',
+        //         'exists:roles,name,guard_name,web',
+        //     ],
+        //     'permissions' => ['nullable', 'array'],
+        //     'permissions.*' => [
+        //         'required',
+        //         'string',
+        //         'distinct',
+        //         'exists:permissions,name,guard_name,web',
+        //     ],
+        //     'password' => ['nullable', 'confirmed', Password::min(8)],
+        // ]);
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
+
             'email' => [
                 'required',
                 'string',
@@ -110,23 +155,39 @@ class UserController extends Controller
                 'max:255',
                 'unique:users,email,' . $user->id,
             ],
-            //'role' => ['required','string', 'exists:roles,name,guard_name,web',],
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => [
+
+            'password' => [
+                'nullable',
+                'confirmed',
+                Password::min(8),
+            ],
+        ];
+
+        // Validasi role hanya jika pengguna berhak mengelolanya.
+        if ($canManageRoles) {
+            $rules['roles'] = ['required', 'array', 'min:1'];
+
+            $rules['roles.*'] = [
                 'required',
                 'string',
                 'distinct',
                 'exists:roles,name,guard_name,web',
-            ],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => [
+            ];
+        }
+
+        // Validasi direct permission hanya jika pengguna berhak mengelolanya.
+        if ($canManagePermissions) {
+            $rules['permissions'] = ['nullable', 'array'];
+
+            $rules['permissions.*'] = [
                 'required',
                 'string',
                 'distinct',
                 'exists:permissions,name,guard_name,web',
-            ],
-            'password' => ['nullable', 'confirmed', Password::min(8)],
-        ]);
+            ];
+        }
+
+        $validated = $request->validate($rules);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
@@ -137,10 +198,15 @@ class UserController extends Controller
 
         $user->save();
 
-        //$user->syncRoles([$validated['role']]);
-        $user->syncRoles($validated['roles']);
+        // Sinkronisasi role hanya jika memiliki permission.
+        if ($canManageRoles) {
+            $user->syncRoles($validated['roles']);
+        }
 
-        $user->syncPermissions($validated['permissions'] ?? []);
+        // Sinkronisasi direct permission hanya jika memiliki permission.
+        if ($canManagePermissions) {
+            $user->syncPermissions($validated['permissions'] ?? []);
+        }
 
         return redirect()
             ->route('users.index')
